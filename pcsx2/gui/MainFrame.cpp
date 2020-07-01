@@ -61,6 +61,7 @@ void MainEmuFrame::UpdateIsoSrcSelection()
 	{
 		case CDVD_SourceType::Iso:		cdsrc = MenuId_Src_Iso;		break;
 		case CDVD_SourceType::Plugin:	cdsrc = MenuId_Src_Plugin;	break;
+		case CDVD_SourceType::Disc:		cdsrc = MenuId_Src_Disc;	break;
 		case CDVD_SourceType::NoDisc:	cdsrc = MenuId_Src_NoDisc;	break;
 
 		jNO_DEFAULT
@@ -214,6 +215,8 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IsoClear_Click, this, MenuId_IsoClear);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Iso);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Plugin);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_DriveSelector_Click, this, MenuId_DriveSelector);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Disc);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_NoDisc);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Ask_On_Boot_Click, this, MenuId_Ask_On_Booting);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_CreateBlockdump_Click, this, MenuId_Debug_CreateBlockdump);
@@ -493,11 +496,13 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	//m_menuCDVD.AppendSeparator();
 	m_menuItem_RecentIsoMenu = m_menuCDVD.AppendSubMenu(&isoRecents, _("ISO &Selector"));
+	m_menuCDVD.Append( MenuId_DriveSelector, _("&Select Disc Drive"));
 	m_menuCDVD.Append( GetPluginMenuId_Settings(PluginId_CDVD), _("Plugin &Menu"), m_PluginMenuPacks[PluginId_CDVD] );
 
 	m_menuCDVD.AppendSeparator();
 	m_menuCDVD.Append( MenuId_Src_Iso,		_("&ISO"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_Plugin,	_("&Plugin"),	_("Uses an external plugin as the CDVD source."), wxITEM_RADIO );
+	m_menuCDVD.Append( MenuId_Src_Disc,		_("&Disc"),		_("Uses a disc drive as the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
 
 	//m_menuCDVD.AppendSeparator();
@@ -689,6 +694,12 @@ void MainEmuFrame::ApplyCoreStatus()
 		case CDVD_SourceType::Plugin:
 			label = _("Boot CDVD (&fast)");
 			break;
+		case CDVD_SourceType::Disc:
+			label = _("Boot CDVD (&fast)");
+			break;
+		case CDVD_SourceType::NoDisc:
+			label = _("Boot CDVD (&fast)");
+			break;
 		//case CDVD_SourceType::NoDisc: (Fast boot menu item is destroyed when no disc is selected)
 		default:
 			pxAssert(false);
@@ -714,6 +725,10 @@ void MainEmuFrame::ApplyCoreStatus()
 			cdvd_full->SetHelp(_("Boot the VM using the current ISO source media"));
 			break;
 		case CDVD_SourceType::Plugin:
+			cdvd_full->SetItemLabel(_("Boo&t CDVD (full)"));
+			cdvd_full->SetHelp(_("Boot the VM using the current CD/DVD source media"));
+			break;
+		case CDVD_SourceType::Disc:
 			cdvd_full->SetItemLabel(_("Boo&t CDVD (full)"));
 			cdvd_full->SetHelp(_("Boot the VM using the current CD/DVD source media"));
 			break;
