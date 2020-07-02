@@ -177,6 +177,53 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 	return result;
 }
 
+// Return values:
+//   wxID_CANCEL - User canceled the action outright.
+//   wxID_RESET  - User wants to reset the emu in addition to swap discs
+//   (anything else) - Standard swap, no reset.  (hotswap!)
+wxWindowID SwapOrReset_Disc( wxWindow* owner, IScopedCoreThread& core, const wxString driveLetter)
+{
+	wxWindowID result = wxID_CANCEL;
+
+	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == g_Conf->CurrentDisc))
+	{
+		core.AllowResume();
+		return result;
+	}
+
+	if (SysHasValidState())
+	{
+		core.DisallowResume();
+		wxDialogWithHelpers dialog(owner, _("Confirm disc change"));
+
+		dialog += dialog.Heading("New drive selected: " + driveLetter);
+		dialog += dialog.GetCharHeight();
+		dialog += dialog.Heading(_("Do you want to swap discs or boot the new disc (via system reset)?"));
+
+		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
+		if (result == wxID_CANCEL)
+		{
+			core.AllowResume();
+			return result;
+		}
+	}
+
+	g_Conf->CdvdSource = CDVD_SourceType::Disc;
+	SysUpdateDiscSrcDrive(driveLetter);
+	if (result == wxID_RESET)
+	{
+		core.DisallowResume();
+		sApp.SysExecute(CDVD_SourceType::Disc);
+	}
+	else
+	{
+		Console.Indent().WriteLn("Hot swapping to new disc!");
+		core.AllowResume();
+	}
+
+	return result;
+}
+
 wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 {
 	if(newsrc == g_Conf->CdvdSource) return wxID_CANCEL;
@@ -200,7 +247,7 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 		if( result == wxID_CANCEL )
 		{
 			core.AllowResume();
-			sMainFrame.UpdateIsoSrcSelection();
+			sMainFrame.UpdateCdvdSrcSelection();
 			return result;
 		}
 	}
@@ -214,7 +261,7 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 			WX_STR(wxString(CDVD_SourceLabels[enum_cast(oldsrc)])),
 			WX_STR(wxString(CDVD_SourceLabels[enum_cast(newsrc)])));
 		//CoreThread.ChangeCdvdSource();
-		sMainFrame.UpdateIsoSrcSelection();
+		sMainFrame.UpdateCdvdSrcSelection();
 		core.AllowResume();
 	}
 	else
@@ -309,6 +356,20 @@ bool MainEmuFrame::_DoSelectELFBrowser()
 	return false;
 }
 
+bool MainEmuFrame::_DoSelectDiscBrowser(wxString& driveLetter)
+{
+	DriveSelectorDialog driveDialog(this, g_Conf->Folders.RunDisc.ToString());
+
+	if (driveDialog.ShowModal() != wxID_CANCEL)
+	{
+		driveLetter = driveDialog.GetSelectedDrive();
+		g_Conf->Folders.RunDisc = wxDirName(driveLetter);
+		return true;
+	}
+
+	return false;
+}
+
 void MainEmuFrame::_DoBootCdvd()
 {
 	ScopedCoreThreadPause paused_core;
@@ -345,6 +406,37 @@ void MainEmuFrame::_DoBootCdvd()
 			SysUpdateIsoSrcFile( result );
 		}
 	}
+	else if( g_Conf->CdvdSource == CDVD_SourceType::Disc )
+	{
+		bool selector = g_Conf->CurrentDisc.IsEmpty();
+
+		if( !selector && !wxDirExists(g_Conf->CurrentDisc) )
+		{
+			// The previous mounted disc isn't mounted anymore
+
+			wxDialogWithHelpers dialog( this, _("Drive not mounted!") );
+			dialog += dialog.Heading(
+				_("An error occured while trying to read drive: ") + g_Conf->CurrentDisc + L"\n\n" +
+				_("Error: The configured drive does not exist. Click OK to select a new drive for CDVD.")
+			);
+
+			pxIssueConfirmation( dialog, MsgButtons().OK() );
+
+			selector = true;
+		}
+
+		if( selector || g_Conf->AskOnBoot )
+		{
+			wxString driveLetter;
+			if( !_DoSelectDiscBrowser( driveLetter ) )
+			{
+				paused_core.AllowResume();
+				return;
+			}
+
+			SysUpdateDiscSrcDrive( driveLetter );
+		}
+	}
 
 	if( SysHasValidState() )
 	{
@@ -360,16 +452,6 @@ void MainEmuFrame::_DoBootCdvd()
 	}
 
 	sApp.SysExecute( g_Conf->CdvdSource );
-}
-
-void MainEmuFrame::Menu_DriveSelector_Click(wxCommandEvent& event)
-{
-	DriveSelectorDialog driveDialog(this);
-	if (driveDialog.ShowModal() == wxID_OK)
-	{
-		wxString driveLetter = driveDialog.GetSelectedDrive();
-		//TODO_CDVD send driveLetter to CDVDdiscReader
-	}
 }
 
 void MainEmuFrame::EnableCdvdPluginSubmenu(bool isEnable)
@@ -403,6 +485,21 @@ void MainEmuFrame::Menu_BootCdvd2_Click( wxCommandEvent &event )
 {
 	g_Conf->EmuOptions.UseBOOT2Injection = true;
 	_DoBootCdvd();
+}
+
+void MainEmuFrame::Menu_DiscBrowse_Click(wxCommandEvent& event)
+{
+	ScopedCoreThreadPopup core;
+	wxString driveLetter;
+
+	if ( !_DoSelectDiscBrowser(driveLetter) )
+	{
+		core.AllowResume();
+		return;
+	}
+
+	SwapOrReset_Disc(this, core, driveLetter);
+	AppSaveSettings();
 }
 
 wxString GetMsg_IsoImageChanged()

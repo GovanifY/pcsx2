@@ -53,7 +53,7 @@ wxMenu* MainEmuFrame::MakeStatesSubMenu( int baseid, int loadBackupId ) const
 	return mnuSubstates;
 }
 
-void MainEmuFrame::UpdateIsoSrcSelection()
+void MainEmuFrame::UpdateCdvdSrcSelection()
 {
 	MenuIdentifiers cdsrc = MenuId_Src_Iso;
 
@@ -215,7 +215,7 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IsoClear_Click, this, MenuId_IsoClear);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Iso);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Plugin);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_DriveSelector_Click, this, MenuId_DriveSelector);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_DiscBrowse_Click, this, MenuId_DriveSelector);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Disc);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_NoDisc);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Ask_On_Boot_Click, this, MenuId_Ask_On_Booting);
@@ -775,7 +775,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check( MenuId_Config_Multitap1Toggle, configToApply.EmuOptions.MultitapPort1_Enabled );
 	}
 
-	UpdateIsoSrcSelection();	//shouldn't be affected by presets but updates from g_Conf anyway and not from configToApply, so no problem here.
+	UpdateCdvdSrcSelection();	//shouldn't be affected by presets but updates from g_Conf anyway and not from configToApply, so no problem here.
 }
 
 //write pending preset settings from the gui to g_Conf,

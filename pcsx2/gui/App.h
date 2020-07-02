@@ -800,6 +800,7 @@ extern void ShutdownPlugins();
 
 extern bool SysHasValidState();
 extern void SysUpdateIsoSrcFile( const wxString& newIsoFile );
+extern void SysUpdateDiscSrcDrive( const wxString& newDiscDrive );
 extern void SysStatus( const wxString& text );
 
 extern bool				HasMainFrame();
