@@ -91,6 +91,7 @@ extern std::unique_ptr<IOCtlSrc> src;
 std::vector<std::wstring> GetOpticalDriveList();
 void GetValidDrive(std::wstring& drive);
 #else
+std::vector<std::string> GetOpticalDriveList();
 void GetValidDrive(std::string& drive);
 #endif
 

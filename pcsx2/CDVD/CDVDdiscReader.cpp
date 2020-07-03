@@ -18,6 +18,8 @@
 
 #include "AppConfig.h"
 
+#include <condition_variable>
+
 void (*newDiscCB)();
 
 static std::mutex s_keepalive_lock;
@@ -166,17 +168,13 @@ void StopKeepAliveThread()
 	s_keepalive_thread.join();
 }
 
-inline std::wstring s2ws(const std::string& str)
-{
-	int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
-	std::wstring wstrTo(size_needed, 0);
-	MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
-	return wstrTo;
-}
-
 s32 CALLBACK DISCopen(const char* pTitle)
 {
+#if defined(_WIN32)
 	std::wstring drive = g_Conf->Folders.RunDisc.ToString().ToStdWstring();
+#else
+	std::string drive = g_Conf->Folders.RunDisc.ToString().ToStdString();
+#endif
 	GetValidDrive(drive);
 
 	// open device file
