@@ -183,6 +183,7 @@ set(pcsx2CDVDSources
 	CDVD/CDVD.cpp
 	CDVD/CDVDdiscReader.cpp
 	CDVD/CDVDisoReader.cpp
+	CDVD/CDVDdiscThread.cpp
 	CDVD/InputIsoFile.cpp
 	CDVD/OutputIsoFile.cpp
 	CDVD/ChunksCache.cpp
@@ -515,6 +516,8 @@ set(pcsx2ZipToolsHeaders
 
 # Windows sources
 set(pcsx2WindowsSources
+	CDVD/Windows/DriveUtility.cpp
+	CDVD/Windows/IOCtlSrc.cpp
 	gui/CpuUsageProviderMSW.cpp
 	windows/cheats/browser.cpp
 	windows/cheats/cheats.cpp
