@@ -60,7 +60,6 @@ void MainEmuFrame::UpdateCdvdSrcSelection()
 	switch( g_Conf->CdvdSource )
 	{
 		case CDVD_SourceType::Iso:		cdsrc = MenuId_Src_Iso;		break;
-		case CDVD_SourceType::Plugin:	cdsrc = MenuId_Src_Plugin;	break;
 		case CDVD_SourceType::Disc:		cdsrc = MenuId_Src_Disc;	break;
 		case CDVD_SourceType::NoDisc:	cdsrc = MenuId_Src_NoDisc;	break;
 
@@ -68,8 +67,6 @@ void MainEmuFrame::UpdateCdvdSrcSelection()
 	}
 	sMenuBar.Check( cdsrc, true );
 	m_statusbar.SetStatusText( CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1 );
-
-	EnableCdvdPluginSubmenu( cdsrc == MenuId_Src_Plugin );
 
 	//sMenuBar.SetLabel( MenuId_Src_Iso, wxsFormat( L"%s -> %s", _("Iso"),
 	//	exists ? Path::GetFilename(g_Conf->CurrentIso).c_str() : _("Empty") ) );
@@ -214,7 +211,6 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IsoBrowse_Click, this, MenuId_IsoBrowse);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IsoClear_Click, this, MenuId_IsoClear);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Iso);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Plugin);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_DiscBrowse_Click, this, MenuId_DriveSelector);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Disc);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_NoDisc);
@@ -297,10 +293,6 @@ void MainEmuFrame::DispatchEvent( const PluginEventType& plugin_evt )
 	{
 		for( int i=0; i<PluginId_Count; ++i )
 			m_PluginMenuPacks[i].OnLoaded();
-
-		// bleh this makes the menu too cluttered. --air
-		//m_menuCDVD.SetLabel( MenuId_Src_Plugin, wxsFormat( L"%s (%s)", _("Plugin"),
-		//	GetCorePlugins().GetName( PluginId_CDVD ).c_str() ) );
 	}
 }
 
@@ -497,11 +489,9 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	//m_menuCDVD.AppendSeparator();
 	m_menuItem_RecentIsoMenu = m_menuCDVD.AppendSubMenu(&isoRecents, _("ISO &Selector"));
 	m_menuCDVD.Append( MenuId_DriveSelector, _("&Select Disc Drive"));
-	m_menuCDVD.Append( GetPluginMenuId_Settings(PluginId_CDVD), _("Plugin &Menu"), m_PluginMenuPacks[PluginId_CDVD] );
 
 	m_menuCDVD.AppendSeparator();
 	m_menuCDVD.Append( MenuId_Src_Iso,		_("&ISO"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );
-	m_menuCDVD.Append( MenuId_Src_Plugin,	_("&Plugin"),	_("Uses an external plugin as the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_Disc,		_("&Disc"),		_("Uses a disc drive as the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
 
@@ -691,9 +681,6 @@ void MainEmuFrame::ApplyCoreStatus()
 		case CDVD_SourceType::Iso:
 			label = _("Boot ISO (&fast)");
 			break;
-		case CDVD_SourceType::Plugin:
-			label = _("Boot CDVD (&fast)");
-			break;
 		case CDVD_SourceType::Disc:
 			label = _("Boot CDVD (&fast)");
 			break;
@@ -723,10 +710,6 @@ void MainEmuFrame::ApplyCoreStatus()
 		case CDVD_SourceType::Iso:
 			cdvd_full->SetItemLabel(_("Boo&t ISO (full)"));
 			cdvd_full->SetHelp(_("Boot the VM using the current ISO source media"));
-			break;
-		case CDVD_SourceType::Plugin:
-			cdvd_full->SetItemLabel(_("Boo&t CDVD (full)"));
-			cdvd_full->SetHelp(_("Boot the VM using the current CD/DVD source media"));
 			break;
 		case CDVD_SourceType::Disc:
 			cdvd_full->SetItemLabel(_("Boo&t CDVD (full)"));

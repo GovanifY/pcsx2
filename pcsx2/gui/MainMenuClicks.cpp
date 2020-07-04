@@ -172,7 +172,7 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 		core_control.AllowResume();
 	}
 
-	GetMainFrame().EnableCdvdPluginSubmenu( g_Conf->CdvdSource == CDVD_SourceType::Plugin);
+	//TODO_CDVD enable/disable disc selector menu item
 
 	return result;
 }
@@ -270,7 +270,7 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 		sApp.SysExecute( g_Conf->CdvdSource );
 	}
 
-	GetMainFrame().EnableCdvdPluginSubmenu( g_Conf->CdvdSource == CDVD_SourceType::Plugin );
+	//TODO_CDVD enable/disable disc selector menu item
 
 	return result;
 }
@@ -454,11 +454,6 @@ void MainEmuFrame::_DoBootCdvd()
 	sApp.SysExecute( g_Conf->CdvdSource );
 }
 
-void MainEmuFrame::EnableCdvdPluginSubmenu(bool isEnable)
-{
-	EnableMenuItem( GetPluginMenuId_Settings(PluginId_CDVD), isEnable );
-}
-
 void MainEmuFrame::Menu_CdvdSource_Click( wxCommandEvent &event )
 {
 	CDVD_SourceType newsrc = CDVD_SourceType::NoDisc;
@@ -466,7 +461,6 @@ void MainEmuFrame::Menu_CdvdSource_Click( wxCommandEvent &event )
 	switch( event.GetId() )
 	{
 		case MenuId_Src_Iso:	newsrc = CDVD_SourceType::Iso;		break;
-		case MenuId_Src_Plugin:	newsrc = CDVD_SourceType::Plugin;	break;
 		case MenuId_Src_Disc: newsrc = CDVD_SourceType::Disc;		break;
 		case MenuId_Src_NoDisc: newsrc = CDVD_SourceType::NoDisc;	break;
 		jNO_DEFAULT
