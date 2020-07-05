@@ -295,6 +295,7 @@ void SysCoreThread::OnCleanupInThread()
 
 	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
 	vu1Thread.WaitVU();
+	DoCDVDclose();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
 
