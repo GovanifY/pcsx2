@@ -251,7 +251,7 @@ static void DetectDiskType()
 
 	int baseMediaType = CDVD->getDiskType();
 	int mType = -1;
-	
+
 	// Paranoid mode: do not trust the plugin's detection system to work correctly.
 	// (.. and there's no reason plugins should be doing their own detection anyway).
 
