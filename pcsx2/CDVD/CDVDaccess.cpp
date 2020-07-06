@@ -466,8 +466,9 @@ s32 DoCDVDreadTrack(u32 lsn, int mode)
 {
 	CheckNullCDVD();
 
-	//TODO_CDVD I believe ISO and Disc use the new CDVDgetBuffer style
 	// TEMP: until all the plugins use the new CDVDgetBuffer style
+	// TODO: The CDVD api only uses the new getBuffer style. Why is this temp?
+	// lastReadSize is needed for block dumps
 	switch (mode)
 	{
 	case CDVD_MODE_2352:
@@ -492,7 +493,7 @@ s32 DoCDVDreadTrack(u32 lsn, int mode)
 s32 DoCDVDgetBuffer(u8* buffer)
 {
 	CheckNullCDVD();
-	int ret = CDVD->getBuffer2(buffer);
+	const int ret = CDVD->getBuffer(buffer);
 
 	if (ret == 0 && blockDumpFile.IsOpened())
 	{
@@ -549,10 +550,9 @@ s32 CALLBACK NODISCreadTrack(u32 lsn, int mode)
 	return -1;
 }
 
-// return can be NULL (for async modes)
-u8* CALLBACK NODISCgetBuffer()
+s32 CALLBACK NODISCgetBuffer(u8* buffer)
 {
-	return NULL;
+	return -1;
 }
 
 s32 CALLBACK NODISCreadSubQ(u32 lsn, cdvdSubQ* subq)
@@ -599,11 +599,6 @@ s32 CALLBACK NODISCreadSector(u8* tempbuffer, u32 lsn, int mode)
 	return -1;
 }
 
-s32 CALLBACK NODISCgetBuffer2(u8* buffer)
-{
-	return -1;
-}
-
 s32 CALLBACK NODISCgetDualInfo(s32* dualType, u32* _layer1start)
 {
 	return -1;
@@ -627,6 +622,5 @@ CDVD_API CDVDapi_NoDisc =
 	NODISCnewDiskCB,
 
 	NODISCreadSector,
-	NODISCgetBuffer2,
 	NODISCgetDualInfo,
 };
