@@ -324,6 +324,9 @@ CDVD_SourceType CDVDsys_GetSourceType()
 
 void CDVDsys_ChangeSource( CDVD_SourceType type )
 {
+	if(CDVD != NULL)
+		DoCDVDclose();
+
 	switch( m_CurrentSourceType = type )
 	{
 		case CDVD_SourceType::Iso:

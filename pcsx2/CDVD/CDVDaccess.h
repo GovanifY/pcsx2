@@ -143,14 +143,11 @@ struct CDVD_API
 };
 
 // ----------------------------------------------------------------------------
-//   Multiple interface system for CDVD, used to provide internal CDVDiso and NoDisc,
-//   and external plugin interfaces.  Do* functions are meant as replacements for
-//   direct CDVD plugin invocation, and add universal block dumping features.
+//   Multiple interface system for CDVD. Do* functions are meant as replacements
+//   for direct CDVD plugin invocation, and add universal block dumping features.
 // ----------------------------------------------------------------------------
 
-//TODO_CDVD update comment ^
-
-extern CDVD_API* CDVD;		// currently active CDVD access mode api (either Iso, NoDisc, or Plugin)
+extern CDVD_API* CDVD;		// currently active CDVD access mode api (either Iso, NoDisc, or Disc)
 
 extern CDVD_API CDVDapi_Iso;
 extern CDVD_API CDVDapi_Disc;
