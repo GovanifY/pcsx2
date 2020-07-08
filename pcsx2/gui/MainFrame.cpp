@@ -485,10 +485,11 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	// ------------------------------------------------------------------------
 	wxMenu& isoRecents( wxGetApp().GetRecentIsoMenu() );
+	wxMenu& driveList ( wxGetApp().GetDriveListMenu() );
 
 	//m_menuCDVD.AppendSeparator();
 	m_menuItem_RecentIsoMenu = m_menuCDVD.AppendSubMenu(&isoRecents, _("ISO &Selector"));
-	m_menuCDVD.Append( MenuId_DriveSelector, _("&Select Disc Drive"));
+	m_menuItem_DriveListMenu = m_menuCDVD.AppendSubMenu(&driveList, _("D&rive Selector"));
 
 	m_menuCDVD.AppendSeparator();
 	m_menuCDVD.Append( MenuId_Src_Iso,		_("&ISO"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );

@@ -898,6 +898,9 @@
     <ClCompile Include="..\..\CDVD\Unix\DriveUtility.cpp">
       <Filter>System\Ps2\Iop\CDVD\Unix</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\DriveList.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1352,6 +1355,9 @@
     </ClInclude>
     <ClInclude Include="..\..\CDVD\CDVDdiscReader.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\DriveList.h">
+      <Filter>AppHost\Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

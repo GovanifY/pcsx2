@@ -416,12 +416,16 @@ void MainEmuFrame::_DoBootCdvd()
 				_("Error: The configured drive does not exist. Click OK to select a new drive for CDVD.")
 			);
 
+			// Send event to refresh drive list submenu
+			wxCommandEvent event(wxEVT_MENU, MenuId_DriveListRefresh);
+			wxGetApp().ProcessEvent(event);
+
 			pxIssueConfirmation( dialog, MsgButtons().OK() );
 
 			selector = true;
 		}
 
-		if( selector || g_Conf->AskOnBoot )
+		if( selector )
 		{
 			wxString driveLetter;
 			if( !_DoSelectDiscBrowser( driveLetter ) )
@@ -431,6 +435,10 @@ void MainEmuFrame::_DoBootCdvd()
 			}
 
 			SysUpdateDiscSrcDrive( driveLetter );
+
+			// Send event to refresh drive list submenu
+			wxCommandEvent event(wxEVT_MENU, MenuId_DriveListRefresh);
+			wxGetApp().ProcessEvent(event);
 		}
 	}
 
