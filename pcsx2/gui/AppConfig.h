@@ -324,7 +324,6 @@ public:
 	bool		AskOnBoot;
 
 	wxString				CurrentIso;
-	wxString				CurrentDisc;
     wxString				CurrentBlockdump;
 	wxString				CurrentELF;
 	wxString				CurrentIRX;

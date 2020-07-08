@@ -183,7 +183,7 @@ wxWindowID SwapOrReset_Disc( wxWindow* owner, IScopedCoreThread& core, const wxS
 {
 	wxWindowID result = wxID_CANCEL;
 
-	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == g_Conf->CurrentDisc))
+	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == g_Conf->Folders.RunDisc.ToString()))
 	{
 		core.AllowResume();
 		return result;
@@ -359,7 +359,7 @@ bool MainEmuFrame::_DoSelectDiscBrowser(wxString& driveLetter)
 	if (driveDialog.ShowModal() != wxID_CANCEL)
 	{
 		driveLetter = driveDialog.GetSelectedDrive();
-		g_Conf->Folders.RunDisc = wxDirName(driveLetter);
+		SysUpdateDiscSrcDrive(driveLetter);
 		return true;
 	}
 
@@ -404,15 +404,15 @@ void MainEmuFrame::_DoBootCdvd()
 	}
 	else if( g_Conf->CdvdSource == CDVD_SourceType::Disc )
 	{
-		bool selector = g_Conf->CurrentDisc.IsEmpty();
+		bool selector = g_Conf->Folders.RunDisc.ToString().IsEmpty();
 
-		if( !selector && !wxDirExists(g_Conf->CurrentDisc) )
+		if( !selector && !g_Conf->Folders.RunDisc.Exists() )
 		{
 			// The previous mounted disc isn't mounted anymore
 
 			wxDialogWithHelpers dialog( this, _("Drive not mounted!") );
 			dialog += dialog.Heading(
-				_("An error occured while trying to read drive: ") + g_Conf->CurrentDisc + L"\n\n" +
+				_("An error occured while trying to read drive: ") + g_Conf->Folders.RunDisc.ToString() + L"\n\n" +
 				_("Error: The configured drive does not exist. Click OK to select a new drive for CDVD.")
 			);
 
@@ -433,8 +433,6 @@ void MainEmuFrame::_DoBootCdvd()
 				paused_core.AllowResume();
 				return;
 			}
-
-			SysUpdateDiscSrcDrive( driveLetter );
 
 			// Send event to refresh drive list submenu
 			wxCommandEvent event(wxEVT_MENU, MenuId_DriveListRefresh);
@@ -497,7 +495,6 @@ void MainEmuFrame::Menu_DiscBrowse_Click(wxCommandEvent& event)
 	}
 
 	SwapOrReset_Disc(this, core, driveLetter);
-	AppSaveSettings();
 }
 
 wxString GetMsg_IsoImageChanged()

@@ -640,7 +640,6 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	ini.Entry( L"CurrentIso", res, res, ini.IsLoading() || IsPortable() );
 	CurrentIso = res.GetFullPath();
 
-	IniEntry( CurrentDisc );
 	IniEntry( CurrentBlockdump );
 	IniEntry( CurrentELF );
 	IniEntry( CurrentIRX );
@@ -1260,9 +1259,9 @@ static void LoadUiSettings()
 		g_Conf->CurrentIso.clear();
 	}
 
-	if( !wxDirExists( g_Conf->CurrentDisc ) )
+	if( !g_Conf->Folders.RunDisc.Exists() )
 	{
-		g_Conf->CurrentDisc.clear();
+		g_Conf->Folders.RunDisc.Clear();
 	}
 
 	sApp.DispatchUiSettingsEvent( loader );
@@ -1300,9 +1299,9 @@ static void SaveUiSettings()
 		g_Conf->CurrentIso.clear();
 	}
 
-	if( !wxDirExists( g_Conf->CurrentDisc ) )
+	if( !g_Conf->Folders.RunDisc.Exists() )
 	{
-		g_Conf->CurrentDisc.clear();
+		g_Conf->Folders.RunDisc.Clear();
 	}
 
 	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso );

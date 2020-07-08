@@ -58,7 +58,8 @@ void DriveListManager::RefreshList()
 		dli->driveLetter = i;
 		dli->itemPtr = m_Menu->AppendRadioItem(wxID_ANY, i);
 
-		if (g_Conf->CurrentDisc == dli->driveLetter)
+		// Check the last used drive item
+		if (g_Conf->Folders.RunDisc.ToString() == dli->driveLetter)
 		{
 			dli->itemPtr->Check(true);
 			itemChecked = true;
@@ -73,8 +74,7 @@ void DriveListManager::RefreshList()
 	{
 		m_Items.at(0)->itemPtr->Check(true);
 
-		g_Conf->Folders.RunDisc = wxDirName(m_Items.at(0)->driveLetter);
-		AppSaveSettings();
+		SysUpdateDiscSrcDrive(m_Items.at(0)->driveLetter);
 	}
 }
 
@@ -101,8 +101,6 @@ void DriveListManager::OnChangedSelection( wxCommandEvent& evt )
 
 	ScopedCoreThreadPopup paused_core;
 	SwapOrReset_Disc(m_Menu->GetWindow(), paused_core, m_Items.at(index)->driveLetter);
-	g_Conf->Folders.RunDisc = wxDirName(m_Items.at(index)->driveLetter);
-	AppSaveSettings();
 }
 
 void DriveListManager::OnRefreshClicked( wxCommandEvent& evt )
