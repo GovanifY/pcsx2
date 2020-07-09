@@ -55,11 +55,11 @@ void DriveListManager::RefreshList()
 	for (auto i : drives)
 	{
 		std::unique_ptr<DriveListItem> dli = std::unique_ptr<DriveListItem>(new DriveListItem());
-		dli->driveLetter = i;
+		dli->driveLetter = wxString(i);
 		dli->itemPtr = m_Menu->AppendRadioItem(wxID_ANY, i);
 
 		// Check the last used drive item
-		if (g_Conf->Folders.RunDisc.ToString() == dli->driveLetter)
+		if (g_Conf->Folders.RunDisc == dli->driveLetter)
 		{
 			dli->itemPtr->Check(true);
 			itemChecked = true;
