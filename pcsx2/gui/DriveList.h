@@ -51,8 +51,8 @@ protected:
 
 struct DriveList
 {
-	wxMenu*								Menu;
-	std::unique_ptr<DriveListManager>	Manager;
+	wxMenu* Menu;
+	std::unique_ptr<DriveListManager> Manager;
 
 	DriveList();
 };
