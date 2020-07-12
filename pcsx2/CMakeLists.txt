@@ -405,8 +405,8 @@ set(pcsx2IPUHeaders
 
 # Linux sources
 set(pcsx2LinuxSources
-	CDVD/Unix/DriveUtility.cpp
-	CDVD/Unix/IOCtlSrc.cpp
+	CDVD/Linux/DriveUtility.cpp
+	CDVD/Linux/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
@@ -414,8 +414,6 @@ set(pcsx2LinuxSources
     )
 
 set(pcsx2OSXSources
-	CDVD/Unix/DriveUtility.cpp
-	CDVD/Unix/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
@@ -663,10 +661,6 @@ if(APPLE)
 	set(Platform
 		${pcsx2OSXSources}
 		${pcsx2LinuxHeaders})
-		
-	set(Platform_Libs
-		${LIBUDEV_LIBRARIES}
-		)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
