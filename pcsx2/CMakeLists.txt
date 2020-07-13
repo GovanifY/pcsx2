@@ -414,6 +414,8 @@ set(pcsx2LinuxSources
     )
 
 set(pcsx2OSXSources
+	CDVD/Linux/DriveUtility.cpp
+	CDVD/Linux/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
@@ -421,6 +423,8 @@ set(pcsx2OSXSources
 	)
 
 set(pcsx2FreeBSDSources
+	CDVD/Linux/DriveUtility.cpp
+	CDVD/Linux/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
