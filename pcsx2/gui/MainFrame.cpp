@@ -496,6 +496,11 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuCDVD.Append( MenuId_Src_Disc,		_("&Disc"),		_("Uses a disc drive as the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
 
+#if defined(__FREEBSD__) || defined(__APPLE__)
+	m_menuItem_DriveListMenu->Enable(false);
+	m_menuCDVD.Enable(MenuId_Src_Disc, false);
+#endif
+
 	//m_menuCDVD.AppendSeparator();
 	//m_menuCDVD.Append( MenuId_SkipBiosToggle,_("Enable BOOT2 injection"),
 	//	_("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK );
