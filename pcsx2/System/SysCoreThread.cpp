@@ -51,6 +51,8 @@ SysCoreThread::SysCoreThread()
 	m_resetVirtualMachine	= true;
 
 	m_hasActiveMachine		= false;
+
+    m_socketIpc = SocketIPC();
 }
 
 SysCoreThread::~SysCoreThread()
@@ -63,12 +65,14 @@ SysCoreThread::~SysCoreThread()
 
 void SysCoreThread::Cancel( bool isBlocking )
 {
+    m_socketIpc.Stop();
 	m_hasActiveMachine = false;
 	_parent::Cancel();
 }
 
 bool SysCoreThread::Cancel( const wxTimeSpan& span )
 {
+    m_socketIpc.Stop();
 	m_hasActiveMachine = false;
 	return _parent::Cancel( span );
 }
@@ -176,6 +180,8 @@ void SysCoreThread::_reset_stuff_as_needed()
 	// because of changes to the TLB.  We don't actually support the TLB, however, so rec
 	// resets aren't in fact *needed* ... yet.  But might as well, no harm.  --air
 
+    m_socketIpc.Stop();
+
 	GetVmMemory().CommitAll();
 
 	if( m_resetVirtualMachine || m_resetRecompilers || m_resetProfilers )
@@ -205,6 +211,7 @@ void SysCoreThread::_reset_stuff_as_needed()
 
 		m_resetVsyncTimers		= false;
 	}
+    m_socketIpc.Start();
 }
 
 void SysCoreThread::DoCpuReset()
@@ -236,7 +243,7 @@ void SysCoreThread::GameStartingInThread()
 	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
-    // TODO: LOAD HERE SOCKET THREAD
+    m_socketIpc.Start();
 #ifdef USE_SAVESLOT_UI_UPDATES
 	UI_UpdateSysControls();
 #endif

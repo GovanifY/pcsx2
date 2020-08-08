@@ -170,6 +170,9 @@ protected:
 	bool			m_resetVsyncTimers;
 	bool			m_resetVirtualMachine;
 
+    // Stores the state of the socket IPC thread.
+    SocketIPC       m_socketIpc;
+
 	// Indicates if the system has an active virtual machine state.  Pretty much always
 	// true anytime between plugins being initialized and plugins being shutdown.  Gets
 	// set false when plugins are shutdown, the corethread is canceled, or when an error

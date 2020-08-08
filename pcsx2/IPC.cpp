@@ -7,9 +7,12 @@
 #include "IPC.h"
 
 
-namespace SocketIPC {
+class SocketIPC {
 
-void SocketThread() {
+void SocketIPC() {
+}
+
+void Start() {
     int sock, msgsock, rval;
     struct sockaddr_un server;
     char buf[1024];
@@ -60,10 +63,16 @@ void SocketThread() {
     unlink(NAME);
 
 }
+void Stop() {
+    // stop thread here
+}
+void ~SocketIPC() {
+    Stop();
+}
 
 void ParseCommand(char *buf) {
     // TODO: Actually parse different IPC events
     printf("-->%s\n", buf);
 }
 
-} // namespace SocketIPC
+} // class SocketIPC
