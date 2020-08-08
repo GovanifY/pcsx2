@@ -7,72 +7,68 @@
 #include "IPC.h"
 
 
-class SocketIPC {
-
-void SocketIPC() {
+SocketIPC::SocketIPC() {
 }
 
-void Start() {
-    int sock, msgsock, rval;
+void SocketIPC::Start() {
     struct sockaddr_un server;
-    char buf[1024];
 
-    sock = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (sock < 0) {
+    m_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (m_sock < 0) {
 	    Console.WriteLn( Color_StrongBlue, "IPC: Cannot open socket! Shutting down...\n" );
         return;
     }
     server.sun_family = AF_UNIX;
-    strcpy(server.sun_path, NAME);
+    strcpy(server.sun_path, SOCKET_NAME);
 
     // we unlink the socket so that when releasing this thread the socket gets
     // freed even if we didn't close correctly the loop
-    unlink(NAME);
-    if (bind(sock, (struct sockaddr *) &server, sizeof(struct sockaddr_un))) {
+    unlink(SOCKET_NAME);
+    if (bind(m_sock, (struct sockaddr *) &server, sizeof(struct sockaddr_un))) {
 	    Console.WriteLn( Color_StrongBlue, "IPC: Error while binding to socket! Shutting down...\n" );
         return;
     }
 
     // maximum queue of 5 commands before refusing
-    listen(sock, 5);
+    listen(m_sock, 5);
     // TODO: start thread here
     SocketThread();
 }
 
-void SocketThread() {
+void SocketIPC::SocketThread() {
+    char buf[1024];
+
     while(true) {
-        msgsock = accept(sock, 0, 0);
-        if (msgsock == -1) {
+        m_msgsock = accept(m_sock, 0, 0);
+        if (m_msgsock == -1) {
 	            Console.WriteLn( Color_StrongBlue, "IPC: Connection to socket broken! Shutting down...\n" );
                 return;
             }
-        else do {
+        else {
             bzero(buf, sizeof(buf));
-            if ((rval = read(msgsock, buf, 1024)) < 0) {
+            if (read(m_msgsock, buf, 1024) < 0) {
 	            Console.WriteLn( Color_StrongBlue, "IPC: Connection to socket broken! Shutting down...\n" );
                 return;
             }
             else {
                 ParseCommand(buf);
             }
-        } 
-        close(msgsock);
+        }
     }
-    // catch signal here
-    close(sock);
-    unlink(NAME);
+}
+void SocketIPC::Stop() {
+    // TODO: stop thread here
+    close(m_msgsock);
+    close(m_sock);
+    unlink(SOCKET_NAME);
 
 }
-void Stop() {
-    // stop thread here
-}
-void ~SocketIPC() {
+SocketIPC::~SocketIPC() {
     Stop();
 }
 
-void ParseCommand(char *buf) {
+char* SocketIPC::ParseCommand(char *buf) {
     // TODO: Actually parse different IPC events
     printf("-->%s\n", buf);
+    return buf;
 }
-
-} // class SocketIPC

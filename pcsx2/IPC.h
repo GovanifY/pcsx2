@@ -1,8 +1,29 @@
 class SocketIPC {
 
     private:
-void m_thread = NULL;
+
+// absolute path of the socket. Stored in the temporary directory in linux since
+// /run requires superuser permission
 const char* SOCKET_NAME = "/tmp/pcsx2";
+
+// currently running thread identifier
+int m_thread = 0;
+
+// socket handlers
+int m_sock, m_msgsock = 0;
+
+
+// possible command names
+enum IPCCommand {
+    MsgRead8 = 0,
+    MsgRead16 = 1,
+    MsgRead32 = 2,
+    MsgRead64 = 3,
+    MsgWrite8 = 4,
+    MsgWrite16 = 5,
+    MsgWrite32 = 6,
+    MsgWrite64 = 7
+};
 
 /* Internal function, thread used to relay IPC commands. */
 void SocketThread();
@@ -15,8 +36,8 @@ char* ParseCommand(char* buf);
     public: 
 
 /* Initializers */
-void SocketIPC();
-void ~SocketIPC();
+SocketIPC();
+~SocketIPC();
 
 /* Starts the event-based socket thread. Does nothing if already started. */
 void Start();
@@ -25,4 +46,4 @@ void Start();
 void Stop();
 
 
-} // class SocketIPC
+}; // class SocketIPC

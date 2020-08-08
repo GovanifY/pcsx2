@@ -19,6 +19,7 @@
 
 #include "Utilities/PersistentThread.h"
 #include "x86emitter/tools.h"
+#include "../IPC.h"
 
 
 using namespace Threading;
