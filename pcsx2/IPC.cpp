@@ -8,6 +8,8 @@
 #include "Memory.h"
 #include "IPC.h"
 
+// TODO: when pcsx2 has a running SysCoreThread but no memory layout setup it
+// asserts, eg by using Shutdown, fix that
 
 SocketIPC::SocketIPC() {
 }
@@ -63,17 +65,12 @@ void SocketIPC::SocketThread(int sock) {
                     Console.WriteLn( Color_Red, "IPC: Cannot send reply! Shutting down...\n" );
                     return;
                 }
-                printf("sent %d bytes, which are:\n", std::get<0>(res));
-                for(int i =0; i < std::get<0>(res); i++) {
-                    printf("%u\n", std::get<1>(res)[i]);
-                }
             }
         }
     }
 }
 void SocketIPC::Stop() {
     if(m_state == Started) {
-        // TODO: close thread there!
         close(m_sock);
         unlink(SOCKET_NAME);
         m_state = Stopped;
