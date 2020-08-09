@@ -15,7 +15,7 @@
 #define to16b(arr) (((uint16_t)(((uint8_t *)(arr))[1]) <<  0)+\
                     ((uint16_t)(((uint8_t *)(arr))[0]) <<  8))
 
-#define to8b(arr) (((uint16_t)(((uint8_t *)(arr))[0]) <<  0))
+#define to8b(arr) (((uint8_t)(((uint8_t *)(arr))[0]) <<  0))
 
 
 
@@ -28,10 +28,10 @@ class SocketIPC {
 const char* SOCKET_NAME = "/tmp/pcsx2";
 
 // currently running thread identifier
-int m_thread = 0;
+std::thread m_thread;
 
 // socket handlers
-int m_sock, m_msgsock = 0;
+int m_sock = 0;
 
 
 // possible command names
@@ -56,12 +56,12 @@ enum State {
 State m_state = Stopped;
 
 /* Internal function, thread used to relay IPC commands. */
-void SocketThread();
+static void SocketThread(int sock);
 
 /* Internal function, Parses an IPC command.
  * buf: buffer containing the IPC command.
  * return value: buffer containing the result of the command. */
-std::tuple<int, char*> ParseCommand(char* buf);
+static std::tuple<int, char*> ParseCommand(char* buf);
 
     public: 
 

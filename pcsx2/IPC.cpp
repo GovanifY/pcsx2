@@ -3,6 +3,7 @@
 #include <sys/un.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <thread>
 #include "Common.h"
 #include "Memory.h"
 #include "IPC.h"
@@ -31,32 +32,34 @@ void SocketIPC::Start() {
             return;
         }
 
-        // maximum queue of 5 commands before refusing
-        listen(m_sock, 5);
-        // TODO: start thread here
-        SocketThread();
+        // maximum queue of 100 commands before refusing
+        listen(m_sock, 100);
+
         m_state = Started;
+        std::thread m_thread(SocketThread, m_sock);
+        m_thread.detach();
     }
 }
 
-void SocketIPC::SocketThread() {
+void SocketIPC::SocketThread(int sock) {
     char buf[1024];
+    int msgsock = 0;
 
     while(true) {
-        m_msgsock = accept(m_sock, 0, 0);
-        if (m_msgsock == -1) {
+        msgsock = accept(sock, 0, 0);
+        if (msgsock == -1) {
             Console.WriteLn( Color_Red, "IPC: Connection to socket broken! Shutting down...\n" );
             return;
         }
         else {
             bzero(buf, sizeof(buf));
-            if (read(m_msgsock, buf, 1024) < 0) {
+            if (read(msgsock, buf, 1024) < 0) {
                 Console.WriteLn( Color_Red, "IPC: Cannot receive event! Shutting down...\n" );
                 return;
             }
             else {
                 auto res = ParseCommand(buf);
-                if (write(m_msgsock, std::get<1>(res), std::get<0>(res)) < 0) {
+                if (write(msgsock, std::get<1>(res), std::get<0>(res)) < 0) {
                     Console.WriteLn( Color_Red, "IPC: Cannot send reply! Shutting down...\n" );
                     return;
                 }
@@ -70,8 +73,7 @@ void SocketIPC::SocketThread() {
 }
 void SocketIPC::Stop() {
     if(m_state == Started) {
-        // TODO: stop thread here
-        close(m_msgsock);
+        // TODO: close thread there!
         close(m_sock);
         unlink(SOCKET_NAME);
         m_state = Stopped;
@@ -89,7 +91,7 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char *buf) {
     //         |  |           argument (VLE)
     //         |  |           |
     // format: XX YY YY YY YY ZZ ZZ ZZ ZZ
-    //        reply code: 00 = OK, 01 = NOT OK
+    //        reply code: 00 = OK, FF = NOT OK
     //        |  return value (VLE)
     //        |  | 
     // reply: XX ZZ ZZ ZZ ZZ
@@ -169,13 +171,13 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char *buf) {
         case MsgWrite64: {
             memWrite64(a, to64b(&buf[5]));
             res_array = (char*)malloc(1*sizeof(char));
-            res_array[0] =  0x01; 
+            res_array[0] =  0x00; 
             rval = std::make_tuple(1,res_array);
             break;
         }
         default: {
             res_array = (char*)malloc(1*sizeof(char));
-            res_array[0] =  0x01; 
+            res_array[0] =  0xFF; 
             rval = std::make_tuple(1,res_array);
             break;
         }
