@@ -25,13 +25,22 @@ enum IPCCommand {
     MsgWrite64 = 7
 };
 
+// possible states of the IPC
+enum State {
+    Started,
+    Stopped
+};
+
+// current state of the IPC
+State m_state = Stopped;
+
 /* Internal function, thread used to relay IPC commands. */
 void SocketThread();
 
 /* Internal function, Parses an IPC command.
  * buf: buffer containing the IPC command.
  * return value: buffer containing the result of the command. */
-char* ParseCommand(char* buf);
+std::tuple<int, char*> ParseCommand(char* buf);
 
     public: 
 

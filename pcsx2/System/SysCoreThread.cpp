@@ -51,8 +51,6 @@ SysCoreThread::SysCoreThread()
 	m_resetVirtualMachine	= true;
 
 	m_hasActiveMachine		= false;
-
-    m_socketIpc = SocketIPC();
 }
 
 SysCoreThread::~SysCoreThread()
