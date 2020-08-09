@@ -1,3 +1,24 @@
+#define to64b(arr) (((uint64_t)(((uint8_t *)(arr))[7]) <<  0)+\
+                    ((uint64_t)(((uint8_t *)(arr))[6]) <<  8)+\
+                    ((uint64_t)(((uint8_t *)(arr))[5]) << 16)+\
+                    ((uint64_t)(((uint8_t *)(arr))[4]) << 24)+\
+                    ((uint64_t)(((uint8_t *)(arr))[3]) << 32)+\
+                    ((uint64_t)(((uint8_t *)(arr))[2]) << 40)+\
+                    ((uint64_t)(((uint8_t *)(arr))[1]) << 48)+\
+                    ((uint64_t)(((uint8_t *)(arr))[0]) << 56))
+
+#define to32b(arr) (((uint32_t)(((uint8_t *)(arr))[3]) <<  0)+\
+                    ((uint32_t)(((uint8_t *)(arr))[2]) <<  8)+\
+                    ((uint32_t)(((uint8_t *)(arr))[1]) << 16)+\
+                    ((uint32_t)(((uint8_t *)(arr))[0]) << 24))
+
+#define to16b(arr) (((uint16_t)(((uint8_t *)(arr))[1]) <<  0)+\
+                    ((uint16_t)(((uint8_t *)(arr))[0]) <<  8))
+
+#define to8b(arr) (((uint16_t)(((uint8_t *)(arr))[0]) <<  0))
+
+
+
 class SocketIPC {
 
     private:

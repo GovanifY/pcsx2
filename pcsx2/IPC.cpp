@@ -60,6 +60,10 @@ void SocketIPC::SocketThread() {
                     Console.WriteLn( Color_Red, "IPC: Cannot send reply! Shutting down...\n" );
                     return;
                 }
+                printf("sent %d bytes, which are:\n", std::get<0>(res));
+                for(int i =0; i < std::get<0>(res); i++) {
+                    printf("%u\n", std::get<1>(res)[i]);
+                }
             }
         }
     }
@@ -142,42 +146,28 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char *buf) {
             break;
         }
         case MsgWrite8: {
-            u32 b = int((unsigned char)(buf[5]));
-            memWrite8(a, b);
+            memWrite8(a, to8b(&buf[5]));
             res_array = (char*)malloc(1*sizeof(char));
             res_array[0] =  0x00; 
             rval = std::make_tuple(1,res_array);
             break;
         }
         case MsgWrite16: {
-            u32 b = int((unsigned char)(buf[5]) << 8 |
-                        (unsigned char)(buf[6]));
-            memWrite16(a, b);
+            memWrite16(a, to16b(&buf[5]));
             res_array = (char*)malloc(1*sizeof(char));
             res_array[0] =  0x00; 
             rval = std::make_tuple(1,res_array);
             break;
         }
         case MsgWrite32: {
-            u32 b = int((unsigned char)(buf[5]) << 24 |
-                (unsigned char)(buf[6]) << 16 |
-                (unsigned char)(buf[7]) << 8 |
-                (unsigned char)(buf[8]));
-            memWrite32(a, b);
+            memWrite32(a, to32b(&buf[5]));
             res_array = (char*)malloc(1*sizeof(char));
             res_array[0] =  0x00; 
             rval = std::make_tuple(1,res_array);
             break;
         }
         case MsgWrite64: {
-            u64 b = int((unsigned char)(buf[5]) << 56 |
-                (unsigned char)(buf[6]) << 48 |
-                (unsigned char)(buf[7]) << 40 |
-                (unsigned char)(buf[8]) << 32 |
-                (unsigned char)(buf[9]) << 24 |
-                (unsigned char)(buf[10]) << 16 |
-                (unsigned char)(buf[11]) << 8 |
-                (unsigned char)(buf[12]));
+            memWrite64(a, to64b(&buf[5]));
             res_array = (char*)malloc(1*sizeof(char));
             res_array[0] =  0x01; 
             rval = std::make_tuple(1,res_array);
