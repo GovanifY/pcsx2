@@ -20,9 +20,6 @@
 #include "IopCommon.h"
 #include "Patch.h"
 #include <chrono>
-#include <filesystem>
-#include <fstream>
-namespace fs = std::filesystem;
 
 u32 SkipCount = 0, IterationCount = 0;
 u32 IterationIncrement = 0, ValueIncrement = 0;
@@ -418,8 +415,6 @@ void handle_extended_t(IniPatch *p)
                         }
                     } break;
 
-
-
                     case 0xE0000000: { // IF Statements (Multi)
                         u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
                         u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
@@ -472,17 +467,7 @@ void handle_extended_t(IniPatch *p)
                                         break;
                                 }
                             } break;
-                case 0xF0000000: { // IPC
-                    auto tmp_path = fs::temp_directory_path();
-                    u32 value = memRead32((u32)p->addr & 0x0FFFFFFF);
-                    tmp_path /= "pcsx2_ipc";
-
-                    std::ofstream ofs(tmp_path);
-                    ofs << std::hex << value; 
-                    ofs.close();
-                }break;
-
-                PrevCheatType = 0;
+                                PrevCheatType = 0;
                         }
                     } break;
                 }
