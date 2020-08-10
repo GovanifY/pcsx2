@@ -83,7 +83,7 @@ SocketIPC::SocketIPC(SysCoreThread *vm) : pxThread("IPC_Socket") {
         // maximum queue of 100 commands before refusing
         listen(m_sock, 100);
         
-        // we save an handle to the main vm object
+        // we save a handle of the main vm object
         m_vm = vm;
 
         // we start the thread
@@ -142,7 +142,6 @@ char* SocketIPC::MakeOkIPC(int size) {
     return res_array;
 }
 
-
 char* SocketIPC::MakeFailIPC(int size) {
     char* res_array = (char*)malloc(size * sizeof(char));
     res_array[0] = (unsigned char) IPC_FAIL;
@@ -161,7 +160,7 @@ std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
     // reply: XX ZZ ZZ ZZ ZZ
     IPCCommand opcode = (IPCCommand)buf[0];
     // YY YY YY YY from schema above
-    u32 a = to32b(&buf[1]);
+    u32 a = FromArray<u32>(buf, 1);
     std::pair<int, char*> rval;
     switch (opcode) {
         case MsgRead8: {
@@ -169,7 +168,7 @@ std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
                 if(m_vm->HasActiveMachine() == true) {
                     res = memRead8(a);
                 } else { goto error; }
-                rval = std::make_pair(2, FromArray(MakeOkIPC(2), res, 1));
+                rval = std::make_pair(2, ToArray(MakeOkIPC(2), res, 1));
                 break;
         }
         case MsgRead16: {
@@ -177,7 +176,7 @@ std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
                 if(m_vm->HasActiveMachine() == true) {
                     res = memRead16(a);
                 } else { goto error; }
-                rval = std::make_pair(3, FromArray(MakeOkIPC(3), res, 1));
+                rval = std::make_pair(3, ToArray(MakeOkIPC(3), res, 1));
                 break;
         }
         case MsgRead32: {
@@ -185,7 +184,7 @@ std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
                 if(m_vm->HasActiveMachine() == true) {
                     res = memRead32(a);
                 } else { goto error; }
-                rval = std::make_pair(5, FromArray(MakeOkIPC(5), res, 1));
+                rval = std::make_pair(5, ToArray(MakeOkIPC(5), res, 1));
                 break;
         }
         case MsgRead64: {
@@ -193,33 +192,33 @@ std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
                 if(m_vm->HasActiveMachine() == true) {
                     memRead64(a, &res);
                 } else { goto error; }
-                rval = std::make_pair(9, FromArray(MakeOkIPC(9), res, 1));
+                rval = std::make_pair(9, ToArray(MakeOkIPC(9), res, 1));
                 break;
         }
         case MsgWrite8: {
                 if(m_vm->HasActiveMachine() == true) {
-                    memWrite8(a, to8b(&buf[5]));
+                    memWrite8(a, FromArray<u8>(buf, 5));
                 } else { goto error; }
                 rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite16: {
                 if(m_vm->HasActiveMachine() == true) {
-                    memWrite16(a, to16b(&buf[5]));
+                    memWrite16(a, FromArray<u16>(buf, 5));
                 } else { goto error; }
                 rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite32: {
                 if(m_vm->HasActiveMachine() == true) {
-                    memWrite32(a, to32b(&buf[5]));
+                    memWrite32(a, FromArray<u32>(buf, 5));
                 } else { goto error; }
                 rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite64: {
                 if(m_vm->HasActiveMachine() == true) {
-                    memWrite64(a, to64b(&buf[5]));
+                    memWrite64(a, FromArray<u64>(buf, 5));
                 } else { goto error; }
                 rval = std::make_pair(1, MakeOkIPC(1));
                 break;

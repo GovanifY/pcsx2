@@ -18,26 +18,6 @@
 
 #pragma once
 
-/* Formatting utilities to get a uint from a char* */
-#define to64b(arr) (((uint64_t)(((uint8_t*)(arr))[7]) << 0) +  \
-        ((uint64_t)(((uint8_t*)(arr))[6]) << 8) +  \
-        ((uint64_t)(((uint8_t*)(arr))[5]) << 16) + \
-        ((uint64_t)(((uint8_t*)(arr))[4]) << 24) + \
-        ((uint64_t)(((uint8_t*)(arr))[3]) << 32) + \
-        ((uint64_t)(((uint8_t*)(arr))[2]) << 40) + \
-        ((uint64_t)(((uint8_t*)(arr))[1]) << 48) + \
-        ((uint64_t)(((uint8_t*)(arr))[0]) << 56))
-
-#define to32b(arr) (((uint32_t)(((uint8_t*)(arr))[3]) << 0) +  \
-        ((uint32_t)(((uint8_t*)(arr))[2]) << 8) +  \
-        ((uint32_t)(((uint8_t*)(arr))[1]) << 16) + \
-        ((uint32_t)(((uint8_t*)(arr))[0]) << 24))
-
-#define to16b(arr) (((uint16_t)(((uint8_t*)(arr))[1]) << 0) + \
-        ((uint16_t)(((uint8_t*)(arr))[0]) << 8))
-
-#define to8b(arr) (((uint8_t)(((uint8_t*)(arr))[0]) << 0))
-
 #include "Utilities/PersistentThread.h"
 #include "System/SysThreads.h"
 
@@ -109,11 +89,24 @@ class SocketIPC : public pxThread {
          * i: when to insert it into the array 
          * return value: res_array */
         template <typename T>
-        static char* FromArray(char* res_array, T res, int i) {
+        static char* ToArray(char* res_array, T res, int i) {
            for(int y=sizeof(T); y > 0; y--) {
                res_array[i-(y-sizeof(T))] = (unsigned char)(res >> ((y-1)*8)) & 0xff;
            }
            return res_array;
+        }
+
+        /* Converts a char* to an uint in little endian 
+         * arr: the array to convert
+         * i: when to load it from the array 
+         * return value: the converted value */
+        template <typename T>
+        static T FromArray(char* arr, int i) {
+            T res = 0;
+            for(int y=sizeof(T); y > 0; y--) {
+                res += (((T)(((uint8_t*)(arr))[i-(y-sizeof(T))]) << ((y-1)*8)));
+            }
+            return res;
         }
 
     public:
