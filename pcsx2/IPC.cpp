@@ -123,8 +123,51 @@ SocketIPC::~SocketIPC() {
 	    DESTRUCTOR_CATCHALL
 }
 
-// we might want to make some TMP magic here...
-// nvm, we NEED it, 90% of this function is array initialization
+char* SocketIPC::MakeOkIPC(int size) {
+    char* res_array = (char*)malloc(size * sizeof(char));
+    res_array[0] = (unsigned char) IPC_OK;
+    return res_array;
+}
+
+
+char* SocketIPC::MakeFailIPC(int size) {
+    char* res_array = (char*)malloc(size * sizeof(char));
+    res_array[0] = (unsigned char) IPC_FAIL;
+    return res_array;
+}
+
+char* SocketIPC::from64b(char* res_array, uint64_t res, int i) {
+    res_array[i+0] = (unsigned char)(res >> 56) & 0xff;
+    res_array[i+1] = (unsigned char)(res >> 48) & 0xff;
+    res_array[i+2] = (unsigned char)(res >> 40) & 0xff;
+    res_array[i+3] = (unsigned char)(res >> 32) & 0xff;
+    res_array[i+4] = (unsigned char)(res >> 24) & 0xff;
+    res_array[i+5] = (unsigned char)(res >> 16) & 0xff;
+    res_array[i+6] = (unsigned char)(res >> 8) & 0xff;
+    res_array[i+7] = (unsigned char)res;
+    return res_array;
+}
+
+char* SocketIPC::from32b(char* res_array, uint32_t res, int i) {
+    res_array[i+0] = (unsigned char)(res >> 24) & 0xff;
+    res_array[i+1] = (unsigned char)(res >> 16) & 0xff;
+    res_array[i+2] = (unsigned char)(res >> 8) & 0xff;
+    res_array[i+3] = (unsigned char)res;
+    return res_array;
+}
+
+char* SocketIPC::from16b(char* res_array, uint16_t res, int i) {
+    res_array[i+0] = (unsigned char)(res >> 8) & 0xff;
+    res_array[i+1] = (unsigned char)res;
+    return res_array;
+}
+
+char* SocketIPC::from8b(char* res_array, uint8_t res, int i) {
+    res_array[i+0] = (unsigned char)res;
+    return res_array;
+}
+
+
 std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
     //         IPC Message event (1 byte)
     //         |  Memory address (4 byte)
@@ -137,101 +180,64 @@ std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
     // reply: XX ZZ ZZ ZZ ZZ
     IPCCommand opcode = (IPCCommand)buf[0];
     // YY YY YY YY from schema above
-    u32 a = int((unsigned char)(buf[1]) << 24 |
-            (unsigned char)(buf[2]) << 16 |
-            (unsigned char)(buf[3]) << 8 |
-            (unsigned char)(buf[4]));
-    char* res_array;
+    u32 a = to32b(&buf[1]);
     std::pair<int, char*> rval;
     switch (opcode) {
         case MsgRead8: {
                 u8 res;
                 try{ res = memRead8(a);}
                 catch (...) { goto error; }
-                res_array = (char*)malloc(2 * sizeof(char));
-                res_array[0] = 0x00;
-                res_array[1] = (unsigned char)res;
-                rval = std::make_pair(2, res_array);
+                rval = std::make_pair(2, from8b(MakeOkIPC(2), res, 1));
                 break;
         }
         case MsgRead16: {
                 u16 res;
                 try{ res = memRead16(a);}
                 catch (...) { goto error; }
-                res_array = (char*)malloc(3 * sizeof(char));
-                res_array[0] = 0x00;
-                res_array[1] = (unsigned char)(res >> 8) & 0xff;
-                res_array[2] = (unsigned char)res;
-                rval = std::make_pair(3, res_array);
+                rval = std::make_pair(3, from16b(MakeOkIPC(3), res, 1));
                 break;
         }
         case MsgRead32: {
                 u32 res;
                 try{ res = memRead32(a);}
                 catch (...) { goto error; }
-                res_array = (char*)malloc(5 * sizeof(char));
-                res_array[0] = 0x00;
-                res_array[1] = (unsigned char)(res >> 24) & 0xff;
-                res_array[2] = (unsigned char)(res >> 16) & 0xff;
-                res_array[3] = (unsigned char)(res >> 8) & 0xff;
-                res_array[4] = (unsigned char)res;
-                rval = std::make_pair(5, res_array);
+                rval = std::make_pair(5, from64b(MakeOkIPC(5), res, 1));
                 break;
         }
         case MsgRead64: {
                 u64 res;
                 try{ memRead64(a, &res);}
                 catch (...) { goto error; }
-                res_array = (char*)malloc(9 * sizeof(char));
-                res_array[0] = 0x00;
-                res_array[1] = (unsigned char)(res >> 56) & 0xff;
-                res_array[2] = (unsigned char)(res >> 48) & 0xff;
-                res_array[3] = (unsigned char)(res >> 40) & 0xff;
-                res_array[4] = (unsigned char)(res >> 32) & 0xff;
-                res_array[5] = (unsigned char)(res >> 24) & 0xff;
-                res_array[6] = (unsigned char)(res >> 16) & 0xff;
-                res_array[7] = (unsigned char)(res >> 8) & 0xff;
-                res_array[8] = (unsigned char)res;
-                rval = std::make_pair(9, res_array);
+                rval = std::make_pair(9, from64b(MakeOkIPC(9), res, 1));
                 break;
         }
         case MsgWrite8: {
                 try{memWrite8(a, to8b(&buf[5]));}
                 catch (...) { goto error; }
-                res_array = (char*)malloc(1 * sizeof(char));
-                res_array[0] = 0x00;
-                rval = std::make_pair(1, res_array);
+                rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite16: {
                 try{memWrite16(a, to16b(&buf[5]));}
                 catch (...) { goto error; }
-                res_array = (char*)malloc(1 * sizeof(char));
-                res_array[0] = 0x00;
-                rval = std::make_pair(1, res_array);
+                rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite32: {
                 try{memWrite32(a, to32b(&buf[5]));}
                 catch (...) { goto error; }
-                res_array = (char*)malloc(1 * sizeof(char));
-                res_array[0] = 0x00;
-                rval = std::make_pair(1, res_array);
+                rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite64: {
                 try{memWrite64(a, to64b(&buf[5]));}
                 catch (...) { goto error; }
-                res_array = (char*)malloc(1 * sizeof(char));
-                res_array[0] = 0x00;
-                rval = std::make_pair(1, res_array);
+                rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         default: {
             error:
-                res_array = (char*)malloc(1 * sizeof(char));
-                res_array[0] = 0xFF;
-                rval = std::make_pair(1, res_array);
+                rval = std::make_pair(1, MakeFailIPC(1));
                 break;
         }
     }
