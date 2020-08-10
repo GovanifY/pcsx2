@@ -201,6 +201,7 @@ void MainEmuFrame::ConnectMenus()
 
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnablePatches_Click, this, MenuId_EnablePatches);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableCheats_Click, this, MenuId_EnableCheats);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableIPC_Click, this, MenuId_EnableIPC);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableWideScreenPatches_Click, this, MenuId_EnableWideScreenPatches);
 #ifndef DISABLE_RECORDING
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableRecordingTools_Click, this, MenuId_EnableRecordingTools);
@@ -464,6 +465,9 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 		_("Automatically applies needed Gamefixes to known problematic games"), wxITEM_CHECK);
 
 	m_menuSys.Append(MenuId_EnableCheats,	_("Enable &Cheats"),
+		wxEmptyString, wxITEM_CHECK);
+
+	m_menuSys.Append(MenuId_EnableIPC,	_("Enable &IPC"),
 		wxEmptyString, wxITEM_CHECK);
 
 	m_menuSys.Append(MenuId_EnableWideScreenPatches,	_("Enable &Widescreen Patches"),
@@ -746,6 +750,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 	{//these should not be affected by presets
 		menubar.Check( MenuId_EnableBackupStates, configToApply.EmuOptions.BackupSavestate );
 		menubar.Check( MenuId_EnableCheats,  configToApply.EmuOptions.EnableCheats );
+		menubar.Check( MenuId_EnableIPC,  configToApply.EmuOptions.EnableIPC );
 		menubar.Check( MenuId_EnableWideScreenPatches,  configToApply.EmuOptions.EnableWideScreenPatches );
 #ifndef DISABLE_RECORDING
 		menubar.Check(MenuId_EnableRecordingTools, configToApply.EmuOptions.EnableRecordingTools);

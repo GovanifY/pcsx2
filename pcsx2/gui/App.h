@@ -119,6 +119,7 @@ enum MenuIdentifiers
 	MenuId_EnableBackupStates,	// Checkbox to enable/disables savestates backup
 	MenuId_EnablePatches,
 	MenuId_EnableCheats,
+	MenuId_EnableIPC,
 	MenuId_EnableWideScreenPatches,
 	MenuId_EnableRecordingTools,
 	MenuId_EnableLuaTools,
