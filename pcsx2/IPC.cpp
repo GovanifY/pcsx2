@@ -29,12 +29,10 @@
 
 #include "Common.h"
 #include "Memory.h"
+#include "System/SysThreads.h"
 #include "IPC.h"
 
-// TODO: try-catch blocks do not avoid asserts/crash on linux when vm is
-// inactive, fix that!!
-
-SocketIPC::SocketIPC() : pxThread("IPC_Socket") {
+SocketIPC::SocketIPC(SysCoreThread *vm) : pxThread("IPC_Socket") {
 #ifdef _WIN32
         WSADATA wsa;
         SOCKET new_socket;
@@ -86,6 +84,8 @@ SocketIPC::SocketIPC() : pxThread("IPC_Socket") {
 
         // maximum queue of 100 commands before refusing
         listen(m_sock, 100);
+
+        m_vm = vm;
 
         // we start the thread
         Start();
@@ -199,53 +199,61 @@ std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
     switch (opcode) {
         case MsgRead8: {
                 u8 res;
-                try{ res = memRead8(a);}
-                catch (...) { goto error; }
+                if(m_vm->HasActiveMachine() == true) {
+                    res = memRead8(a);
+                } else { goto error; }
                 rval = std::make_pair(2, from8b(MakeOkIPC(2), res, 1));
                 break;
         }
         case MsgRead16: {
                 u16 res;
-                try{ res = memRead16(a);}
-                catch (...) { goto error; }
+                if(m_vm->HasActiveMachine() == true) {
+                    res = memRead16(a);
+                } else { goto error; }
                 rval = std::make_pair(3, from16b(MakeOkIPC(3), res, 1));
                 break;
         }
         case MsgRead32: {
                 u32 res;
-                try{ res = memRead32(a);}
-                catch (...) { goto error; }
+                if(m_vm->HasActiveMachine() == true) {
+                    res = memRead32(a);
+                } else { goto error; }
                 rval = std::make_pair(5, from32b(MakeOkIPC(5), res, 1));
                 break;
         }
         case MsgRead64: {
                 u64 res;
-                try{ memRead64(a, &res);}
-                catch (...) { goto error; }
+                if(m_vm->HasActiveMachine() == true) {
+                    memRead64(a, &res);
+                } else { goto error; }
                 rval = std::make_pair(9, from64b(MakeOkIPC(9), res, 1));
                 break;
         }
         case MsgWrite8: {
-                try{memWrite8(a, to8b(&buf[5]));}
-                catch (...) { goto error; }
+                if(m_vm->HasActiveMachine() == true) {
+                    memWrite8(a, to8b(&buf[5]));
+                } else { goto error; }
                 rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite16: {
-                try{memWrite16(a, to16b(&buf[5]));}
-                catch (...) { goto error; }
+                if(m_vm->HasActiveMachine() == true) {
+                    memWrite16(a, to16b(&buf[5]));
+                } else { goto error; }
                 rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite32: {
-                try{memWrite32(a, to32b(&buf[5]));}
-                catch (...) { goto error; }
+                if(m_vm->HasActiveMachine() == true) {
+                    memWrite32(a, to32b(&buf[5]));
+                } else { goto error; }
                 rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }
         case MsgWrite64: {
-                try{memWrite64(a, to64b(&buf[5]));}
-                catch (...) { goto error; }
+                if(m_vm->HasActiveMachine() == true) {
+                    memWrite64(a, to64b(&buf[5]));
+                } else { goto error; }
                 rval = std::make_pair(1, MakeOkIPC(1));
                 break;
         }

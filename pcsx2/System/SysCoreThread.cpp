@@ -24,6 +24,7 @@
 #include "Patch.h"
 #include "SysThreads.h"
 #include "MTVU.h"
+#include "IPC.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
@@ -51,6 +52,8 @@ SysCoreThread::SysCoreThread()
 	m_resetVirtualMachine	= true;
 
 	m_hasActiveMachine		= false;
+
+    m_socketIpc = std::make_unique<SocketIPC>(this);
 }
 
 SysCoreThread::~SysCoreThread()

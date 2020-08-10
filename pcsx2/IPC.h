@@ -16,6 +16,8 @@
 /* Client code example for interfacing with the IPC interface is available 
  * here: https://code.govanify.com/govanify/pcsx2_ipc/ */
 
+#pragma once
+
 /* Formatting utilities to get a uint from a char* */
 #define to64b(arr) (((uint64_t)(((uint8_t*)(arr))[7]) << 0) +  \
         ((uint64_t)(((uint8_t*)(arr))[6]) << 8) +  \
@@ -36,13 +38,12 @@
 
 #define to8b(arr) (((uint8_t)(((uint8_t*)(arr))[0]) << 0))
 
-
 #include "Utilities/PersistentThread.h"
+#include "System/SysThreads.h"
 
 using namespace Threading;
 
 class SocketIPC : public pxThread {
-
 
 	typedef pxThread _parent;
 
@@ -77,11 +78,14 @@ class SocketIPC : public pxThread {
             MsgWrite64 = 7
         };
 
+        // possible result codes
         enum IPCResult {
             IPC_OK = 0,
             IPC_FAIL = 0xFF
         };
 
+        // handle to the main vm thread
+        SysCoreThread * m_vm;
 
         /* Thread used to relay IPC commands. */
         void ExecuteTaskInThread();
@@ -90,7 +94,7 @@ class SocketIPC : public pxThread {
          * buf: buffer containing the IPC command.
          * return value: pair containing a buffer with the result 
          *               of the command and its size. */
-        static std::pair<int, char*> ParseCommand(char* buf);
+        std::pair<int, char*> ParseCommand(char* buf);
 
         /* Formats an IPC buffer
          * size: size of the array to allocate
@@ -111,7 +115,7 @@ class SocketIPC : public pxThread {
 
     public:
         /* Initializers */
-        SocketIPC();
+        SocketIPC(SysCoreThread *vm);
         virtual ~SocketIPC();
 
 }; // class SocketIPC
