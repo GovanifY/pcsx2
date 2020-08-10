@@ -174,6 +174,13 @@ protected:
 	// Stores the state of the socket IPC thread.
 	std::unique_ptr<SocketIPC> m_socketIpc;
 
+    // Current state of the IPC thread
+    enum StateIPC {
+        OFF,
+        ON
+    };
+    StateIPC m_IpcState = OFF;
+
 	// Indicates if the system has an active virtual machine state.  Pretty much always
 	// true anytime between plugins being initialized and plugins being shutdown.  Gets
 	// set false when plugins are shutdown, the corethread is canceled, or when an error
