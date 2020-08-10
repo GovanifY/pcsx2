@@ -45,13 +45,11 @@ SocketIPC::SocketIPC(SysCoreThread *vm) : pxThread("IPC_Socket") {
             return;
         }
 
-        //Create a socket
         if ((m_sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
             Console.WriteLn(Color_Red, "IPC: Cannot open socket! Shutting down...");
             return;
         }
 
-        //Prepare the sockaddr_in structure
         server.sin_family = AF_INET;
         // localhost only
         server.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -84,7 +82,8 @@ SocketIPC::SocketIPC(SysCoreThread *vm) : pxThread("IPC_Socket") {
 
         // maximum queue of 100 commands before refusing
         listen(m_sock, 100);
-
+        
+        // we save an handle to the main vm object
         m_vm = vm;
 
         // we start the thread
@@ -149,9 +148,6 @@ char* SocketIPC::MakeFailIPC(int size) {
     res_array[0] = (unsigned char) IPC_FAIL;
     return res_array;
 }
-
-
-
 
 std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
     //         IPC Message event (1 byte)

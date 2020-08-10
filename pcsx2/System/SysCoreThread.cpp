@@ -53,7 +53,7 @@ SysCoreThread::SysCoreThread()
 
 	m_hasActiveMachine		= false;
 
-    m_socketIpc = std::make_unique<SocketIPC>(this);
+	m_socketIpc = std::make_unique<SocketIPC>(this);
 }
 
 SysCoreThread::~SysCoreThread()
@@ -178,7 +178,6 @@ void SysCoreThread::_reset_stuff_as_needed()
 	// Note that resetting recompilers along with the virtual machine is only really needed
 	// because of changes to the TLB.  We don't actually support the TLB, however, so rec
 	// resets aren't in fact *needed* ... yet.  But might as well, no harm.  --air
-
 
 	GetVmMemory().CommitAll();
 

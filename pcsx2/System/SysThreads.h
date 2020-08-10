@@ -171,9 +171,8 @@ protected:
 	bool			m_resetVsyncTimers;
 	bool			m_resetVirtualMachine;
 
-    // Stores the state of the socket IPC thread.
-    std::unique_ptr<SocketIPC> m_socketIpc;
-
+	// Stores the state of the socket IPC thread.
+	std::unique_ptr<SocketIPC> m_socketIpc;
 
 	// Indicates if the system has an active virtual machine state.  Pretty much always
 	// true anytime between plugins being initialized and plugins being shutdown.  Gets

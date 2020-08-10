@@ -51,7 +51,7 @@ class SocketIPC : public pxThread {
 
 #ifdef _WIN32
         // windows claim to have support for AF_UNIX sockets but that is a blatant lie, 
-        //their SDK won't even run their own examples, so we go on TCP sockets.
+        // their SDK won't even run their own examples, so we go on TCP sockets.
 #define PORT 28011
 #else
         // absolute path of the socket. Stored in the temporary directory in linux since
