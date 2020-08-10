@@ -18,11 +18,16 @@
 #define to8b(arr) (((uint8_t)(((uint8_t*)(arr))[0]) << 0))
 
 
+#include "Utilities/PersistentThread.h"
 
-class SocketIPC
-{
+using namespace Threading;
 
-    private:
+class SocketIPC : public pxThread {
+
+
+	typedef pxThread _parent;
+
+    protected:
 
 #ifdef _WIN32
         // windows claim to have support for AF_UNIX sockets but that is a blatant lie, 
@@ -34,9 +39,6 @@ class SocketIPC
         const char* SOCKET_NAME = "/tmp/pcsx2.sock";
 #endif
 
-        // currently running thread identifier
-        std::thread m_thread;
-
         // socket handlers
 #ifdef _WIN32
         SOCKET m_sock = INVALID_SOCKET;
@@ -44,8 +46,7 @@ class SocketIPC
         int m_sock = 0;
 #endif
 
-
-        // possible command names
+        // possible command messages
         enum IPCCommand {
             MsgRead8 = 0,
             MsgRead16 = 1,
@@ -57,37 +58,19 @@ class SocketIPC
             MsgWrite64 = 7
         };
 
-        // possible states of the IPC
-        enum State {
-            Started,
-            Stopped
-        };
 
-        // current state of the IPC
-        State m_state = Stopped;
-
-        /* Internal function, thread used to relay IPC commands. */
-#ifdef _WIN32
-        static void SocketThread(SOCKET sock);
-#else
-        static void SocketThread(int sock);
-#endif
+        /* Thread used to relay IPC commands. */
+        void ExecuteTaskInThread();
 
         /* Internal function, Parses an IPC command.
          * buf: buffer containing the IPC command.
-         * return value: buffer containing the result of the command. */
-        static std::tuple<int, char*> ParseCommand(char* buf);
+         * return value: pair containing a buffer with the result 
+         *               of the command and its size. */
+        static std::pair<int, char*> ParseCommand(char* buf);
 
     public:
         /* Initializers */
         SocketIPC();
-        ~SocketIPC();
-
-        /* Starts the event-based socket thread. Does nothing if already started. */
-        void Start();
-
-        /* Stops the event-based socket thread. Does nothing if already stopped. */
-        void Stop();
-
+        virtual ~SocketIPC();
 
 }; // class SocketIPC

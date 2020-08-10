@@ -6,7 +6,6 @@
 #include <thread>
 #include <sys/types.h>
 #if _WIN32
-#pragma comment(lib, "Ws2_32.lib")
 #define bzero(b, len) (memset((b), '\0', (len)), (void)0)
 #include <windows.h>
 #else
@@ -18,18 +17,16 @@
 #include "Memory.h"
 #include "IPC.h"
 
+// TODO: try-catch blocks do not avoid asserts/crash on linux when vm is
+// inactive, fix that!!
 
-SocketIPC::SocketIPC() {
-    Start();
-}
-
-void SocketIPC::Start() {
-    if (m_state == Stopped) {
+SocketIPC::SocketIPC() : pxThread("IPC_Socket") {
 #ifdef _WIN32
         WSADATA wsa;
         SOCKET new_socket;
         struct sockaddr_in server, client;
         int c;
+
 
         if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
             Console.WriteLn(Color_Red, "IPC: Cannot initialize winsock! Shutting down...");
@@ -76,23 +73,16 @@ void SocketIPC::Start() {
         // maximum queue of 100 commands before refusing
         listen(m_sock, 100);
 
-        m_state = Started;
-        std::thread m_thread(SocketThread, m_sock);
-        m_thread.detach();
-    }
+        // we start the thread
+        Start();
 }
-#ifdef _WIN32
-void SocketIPC::SocketThread(SOCKET sock) {
-#else
-void SocketIPC::SocketThread(int sock) {
-#endif
+
+void SocketIPC::ExecuteTaskInThread() {
     char buf[1024];
     int msgsock = 0;
-
     while (true) {
-        msgsock = accept(sock, 0, 0);
+        msgsock = accept(m_sock, 0, 0);
         if (msgsock == -1) {
-            Console.WriteLn(Color_Red, "IPC: Connection to socket broken! Shutting down...\n");
             return;
         }
         else {
@@ -102,25 +92,23 @@ void SocketIPC::SocketThread(int sock) {
 #else
             if (read(msgsock, buf, 1024) < 0) {
 #endif
-                    Console.WriteLn(Color_Red, "IPC: Cannot receive event! Shutting down...\n");
                     return;
                 }
                 else {
                     auto res = ParseCommand(buf);
 #ifdef _WIN32
-                    if (send(msgsock, std::get<1>(res), std::get<0>(res), 0) < 0) {
+                    if (send(msgsock, res.second, res.first, 0) < 0) {
 #else
-                    if (write(msgsock, std::get<1>(res), std::get<0>(res)) < 0) {
+                    if (write(msgsock, res.second, res.first) < 0) {
 #endif
-                        Console.WriteLn(Color_Red, "IPC: Cannot send reply! Shutting down...\n");
                         return;
                     }
                 }
         }
     }
 }
-void SocketIPC::Stop() {
-    if (m_state == Started) {
+
+SocketIPC::~SocketIPC() {
 #ifdef _WIN32
         closesocket(m_sock);
         WSACleanup();
@@ -128,16 +116,16 @@ void SocketIPC::Stop() {
         close(m_sock);
         unlink(SOCKET_NAME);
 #endif
-        m_state = Stopped;
-    }
-}
-SocketIPC::~SocketIPC() {
-    Stop();
+        // destroy the thread
+	    try {
+		    pxThread::Cancel();
+	    }
+	    DESTRUCTOR_CATCHALL
 }
 
 // we might want to make some TMP magic here...
 // nvm, we NEED it, 90% of this function is array initialization
-std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
+std::pair<int, char*> SocketIPC::ParseCommand(char* buf) {
     //         IPC Message event (1 byte)
     //         |  Memory address (4 byte)
     //         |  |           argument (VLE)
@@ -148,12 +136,13 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
     //        |  |
     // reply: XX ZZ ZZ ZZ ZZ
     IPCCommand opcode = (IPCCommand)buf[0];
+    // YY YY YY YY from schema above
     u32 a = int((unsigned char)(buf[1]) << 24 |
             (unsigned char)(buf[2]) << 16 |
             (unsigned char)(buf[3]) << 8 |
             (unsigned char)(buf[4]));
     char* res_array;
-    std::tuple<int, char*> rval;
+    std::pair<int, char*> rval;
     switch (opcode) {
         case MsgRead8: {
                 u8 res;
@@ -162,7 +151,7 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
                 res_array = (char*)malloc(2 * sizeof(char));
                 res_array[0] = 0x00;
                 res_array[1] = (unsigned char)res;
-                rval = std::make_tuple(2, res_array);
+                rval = std::make_pair(2, res_array);
                 break;
         }
         case MsgRead16: {
@@ -173,7 +162,7 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
                 res_array[0] = 0x00;
                 res_array[1] = (unsigned char)(res >> 8) & 0xff;
                 res_array[2] = (unsigned char)res;
-                rval = std::make_tuple(3, res_array);
+                rval = std::make_pair(3, res_array);
                 break;
         }
         case MsgRead32: {
@@ -186,7 +175,7 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
                 res_array[2] = (unsigned char)(res >> 16) & 0xff;
                 res_array[3] = (unsigned char)(res >> 8) & 0xff;
                 res_array[4] = (unsigned char)res;
-                rval = std::make_tuple(5, res_array);
+                rval = std::make_pair(5, res_array);
                 break;
         }
         case MsgRead64: {
@@ -203,7 +192,7 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
                 res_array[6] = (unsigned char)(res >> 16) & 0xff;
                 res_array[7] = (unsigned char)(res >> 8) & 0xff;
                 res_array[8] = (unsigned char)res;
-                rval = std::make_tuple(9, res_array);
+                rval = std::make_pair(9, res_array);
                 break;
         }
         case MsgWrite8: {
@@ -211,7 +200,7 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
                 catch (...) { goto error; }
                 res_array = (char*)malloc(1 * sizeof(char));
                 res_array[0] = 0x00;
-                rval = std::make_tuple(1, res_array);
+                rval = std::make_pair(1, res_array);
                 break;
         }
         case MsgWrite16: {
@@ -219,7 +208,7 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
                 catch (...) { goto error; }
                 res_array = (char*)malloc(1 * sizeof(char));
                 res_array[0] = 0x00;
-                rval = std::make_tuple(1, res_array);
+                rval = std::make_pair(1, res_array);
                 break;
         }
         case MsgWrite32: {
@@ -227,7 +216,7 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
                 catch (...) { goto error; }
                 res_array = (char*)malloc(1 * sizeof(char));
                 res_array[0] = 0x00;
-                rval = std::make_tuple(1, res_array);
+                rval = std::make_pair(1, res_array);
                 break;
         }
         case MsgWrite64: {
@@ -235,14 +224,14 @@ std::tuple<int, char*> SocketIPC::ParseCommand(char* buf) {
                 catch (...) { goto error; }
                 res_array = (char*)malloc(1 * sizeof(char));
                 res_array[0] = 0x00;
-                rval = std::make_tuple(1, res_array);
+                rval = std::make_pair(1, res_array);
                 break;
         }
         default: {
             error:
                 res_array = (char*)malloc(1 * sizeof(char));
                 res_array[0] = 0xFF;
-                rval = std::make_tuple(1, res_array);
+                rval = std::make_pair(1, res_array);
                 break;
         }
     }

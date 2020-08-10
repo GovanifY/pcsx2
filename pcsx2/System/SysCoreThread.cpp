@@ -51,6 +51,7 @@ SysCoreThread::SysCoreThread()
 	m_resetVirtualMachine	= true;
 
 	m_hasActiveMachine		= false;
+
 }
 
 SysCoreThread::~SysCoreThread()
