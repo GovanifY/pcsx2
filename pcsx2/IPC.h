@@ -108,10 +108,13 @@ class SocketIPC : public pxThread {
          * res: the value to convert
          * i: when to insert it into the array 
          * return value: res_array */
-        static char* from64b(char* res_array, uint64_t res, int i);
-        static char* from32b(char* res_array, uint32_t res, int i);
-        static char* from16b(char* res_array, uint16_t res, int i);
-        static char* from8b(char* res_array, uint8_t res, int i);
+        template <typename T>
+        static char* FromArray(char* res_array, T res, int i) {
+           for(int y=sizeof(T); y > 0; y--) {
+               res_array[i-(y-sizeof(T))] = (unsigned char)(res >> ((y-1)*8)) & 0xff;
+           }
+           return res_array;
+        }
 
     public:
         /* Initializers */
