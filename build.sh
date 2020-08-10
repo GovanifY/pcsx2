@@ -168,7 +168,7 @@ run_coverity()
 }
 
 # Main script
-flags="-DCMAKE_BUILD_PO=FALSE -DCMAKE_INSTALL_PREFIX=/tmp/pcsx2_debug -DDISABLE_ADVANCE_SIMD=TRUE -DDISABLE_PCSX2_WRAPPER=TRUE -DDOC_DIR=/tmp/pcsx2_debug/share/doc/pcsx2 -DGAMEINDEX_DIR=/tmp/pcsx2_debug/share/pcsx2 -DGLSL_SHADER_DIR=/tmp/pcsx2_debug/share/pcsx2 -DwxWidgets_LIBRARIES=/nix/store/5jsn2w7cp2rrc1ks4y21xhr0pz61051b-wxwidgets-3.0.4/lib -DwxWidgets_INCLUDE_DIRS=/nix/store/5jsn2w7cp2rrc1ks4y21xhr0pz61051b-wxwidgets-3.0.4/include -DwxWidgets_CONFIG_EXECUTABLE=/nix/store/5jsn2w7cp2rrc1ks4y21xhr0pz61051b-wxwidgets-3.0.4/bin/wx-config -DPACKAGE_MODE=TRUE -DPLUGIN_DIR=/tmp/pcsx2_debug/lib/pcsx2 -DREBUILD_SHADER=TRUE -DXDG_STD=TRUE -DGTK2_GLIBCONFIG_INCLUDE_DIR=/nix/store/krlifqmwhzz3hf4kydr5gnrsn12q3x5h-glib-2.62.6/lib/glib-2.0/include -DGTK2_GDKCONFIG_INCLUDE_DIR=/nix/store/hl9cqdhk7jzwcr81wkcqy2krk9vn23gi-gtk+-2.24.32/lib/gtk-2.0/include -DGTK2_INCLUDE_DIRS=/nix/store/2dz1bzdiny2p2gsifx91azkafx2gqxyk-gtk+-2.24.32-dev/include/gtk-2.0 -DGTK3_API=FALSE"
+flags="-DCMAKE_BUILD_PO=FALSE"
 
 cleanBuild=0
 useClang=0
